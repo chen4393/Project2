@@ -6,7 +6,6 @@ public class BattleboatsBoard {
 	int[][] board;
 	boolean[][] isVisited;
 	int numBoats = 0;	// total number of boats
-	int numTurns = 0;	// total number of rounds played
 	int numSunk = 0;	// total number of sunk boat
 	int boatIndex = 0;	// increment by one when new boat added
 	int numCannonShots = 0;	// total number of cannon shot
@@ -126,7 +125,9 @@ public class BattleboatsBoard {
 			}
 			System.out.println(r + ", " + c);
 			if (r < 0 || r >= h || c < 0 || c >= w) {
-				result = "Penalty";
+				// shoot out of bounds
+				turn++;
+				result = "Penalty, the user’s next turn will be skipped.";
 			} else {
 				if (board[r][c] > 0) {
 					if (checkSunk(board[r][c])) {
@@ -137,18 +138,19 @@ public class BattleboatsBoard {
 					}
 					board[r][c] *= -1;
 					numCannonShots++;
-				} else if (board[r][c] < 0) {
-					result = "Penalty";
+				} else if (isVisited[r][c]) {
+					// duplicated shot
+					turn++;
+					result = "Penalty, the user’s next turn will be skipped.";
 				} else {
 					result = "miss";
 				}
 				isVisited[r][c] = true;
 			}
 			System.out.println(result);
-			numTurns++;
 		}
 		partialDisplay();
-		System.out.println("The total number of turns is " + numTurns);
+		System.out.println("The total number of turns is " + turn);
 		System.out.println("The total number of cannon shots is " + numCannonShots);
 	}
 	// check if the hit is the last hit
