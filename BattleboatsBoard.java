@@ -102,13 +102,30 @@ public class BattleboatsBoard {
 		int turn = 0;
 		String result = "";
 		int r = 0, c = 0;
+		boolean isDebug = false;	// debug mode flag
+		boolean isRecon = false;	// recon flag
+		Scanner sc = new Scanner(System.in);
+		System.out.print("debug mode?(true/false):");
+		if (sc.hasNext()) {
+			isDebug = sc.nextBoolean();
+		}
 		while (numSunk != numBoats) {
+			//System.out.println(numSunk + " : " + numBoats);
 			turn++;
+			System.out.println("Turn " + turn);
+			if (isRecon) {
+				System.out.println("RECON");
+				drone(r, c);
+				isRecon = false;
+			}
 			partialDisplay();
-			//System.out.println();
-			//display();
-			System.out.println("Turn " + turn + ":\nPlease enter coordinate (a, b)");
-			Scanner sc = new Scanner(System.in);
+			/*	FOR DEBUG MODE */
+			if (isDebug) {
+				System.out.println();
+				System.out.println("DEBUG");
+				display();
+			}
+			sc = new Scanner(System.in);
 			System.out.print("Please enter a row number: ");
 			try {
 				r = sc.nextInt();
@@ -124,28 +141,41 @@ public class BattleboatsBoard {
 				continue;
 			}
 			System.out.println(r + ", " + c);
-			if (r < 0 || r >= h || c < 0 || c >= w) {
-				// shoot out of bounds
-				turn++;
-				result = "Penalty, the user’s next turn will be skipped.";
-			} else {
-				if (board[r][c] > 0) {
-					if (checkSunk(board[r][c])) {
-						result = "sunk";
-						numSunk++;
-					} else {
-						result = "hit";
-					}
-					board[r][c] *= -1;
-					numCannonShots++;
-				} else if (isVisited[r][c]) {
-					// duplicated shot
+			System.out.print("attack or recon?(attack/recon) ");
+			String cmd = "";
+			sc = new Scanner(System.in);
+			if (sc.hasNext()) {
+				cmd = sc.nextLine(); 
+			}
+			//System.out.println(cmd);
+			if (cmd.equals("attack")) {
+				if (r < 0 || r >= h || c < 0 || c >= w) {
+					// shoot out of bounds
 					turn++;
 					result = "Penalty, the user’s next turn will be skipped.";
 				} else {
-					result = "miss";
+					if (board[r][c] > 0) {
+						if (checkSunk(board[r][c])) {
+							result = "sunk";
+							numSunk++;
+						} else {
+							result = "hit";
+						}
+						board[r][c] *= -1;
+						numCannonShots++;
+					} else if (isVisited[r][c]) {
+						// duplicated shot
+						turn++;
+						result = "Penalty, the user’s next turn will be skipped.";
+					} else {
+						result = "miss";
+					}
+					isVisited[r][c] = true;
 				}
-				isVisited[r][c] = true;
+			} else {
+				isRecon = true;
+				turn += 4;
+				result = "Penalty, the user’s next 4 turns will be skipped.";
 			}
 			System.out.println(result);
 		}
@@ -156,11 +186,22 @@ public class BattleboatsBoard {
 	// check if the hit is the last hit
 	public boolean checkSunk(int target) {
 		int counter = 0;
+		// scan through the whole table, find the frequency of the target appears
 		for (int i = 0; i < board.length; i++)
 			for (int j = 0; j < board[i].length; j++)
 				if (board[i][j] == target)
 					counter++;
 		return counter == 1;	// check if the cell is the last part of the boat
+	}
+	// recon mode
+	public void drone(int r, int c) {
+		for (int i = r-1; i <= r+1; i++) {
+			for (int j = c-1; j <= c+1; j++) {
+				if (i >= 0 && j >= 0 && i < h && j < w) {
+					System.out.println("(" + i + ", " + j + ") = " + board[i][j]);
+				}
+			}
+		}
 	}
 	public static void main(String[] args) {
 		if (args.length != 2) {
