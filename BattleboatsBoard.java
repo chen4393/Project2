@@ -3,20 +3,36 @@ import java.util.Scanner;
 public class BattleboatsBoard {
 	int h;	// height
 	int w;	// width
-	int[][] board;
-	boolean[][] isVisited;
+	int[][] board;	// the battle board
+	// flags to determine whether each grid is attacked or not
+	// true if visible by user
+	boolean[][] isVisited;	
 	int numBoats = 0;	// total number of boats
 	int numSunk = 0;	// total number of sunk boat
-	int boatIndex = 0;	// increment by one when new boat added
+	int boatIndex = 0;	// increment by one when new boat added, specifying each boat
 	int numCannonShots = 0;	// total number of cannon shot
+
+	boolean isDebug = false;	// debug mode flag
+	
 	// print the totally visible board before each turn
+	// '0' stands for empty grid
+	// positive numbers stand for the boat specified by its own boatIndex
 	public void display() {
 		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++)
-				System.out.print(board[i][j] + "\t");
+			for (int j = 0; j < board[i].length; j++) {
+				if (isVisited[i][j])
+					System.out.print(board[i][j] + "\t");
+				else {
+					if (isDebug)
+						System.out.print(board[i][j] + "(I)\t");
+					else
+						System.out.print(board[i][j] + "\t");
+				}
+			}
 			System.out.println();
 		}
 	}
+	
 	// print the partially visible board before each turn
 	public void partialDisplay() {
 		//System.out.println(prevResult);
@@ -29,17 +45,21 @@ public class BattleboatsBoard {
 						System.out.print(board[i][j] + "\t");
 					}
 				} else {
-					System.out.print("X" + "\t");	// for unvisited cells
+					System.out.print("X" + "\t");	// for unvisited cells, invisible
 				}
 			}
 			System.out.println();
 		}
 	}
+
+	// construct the board and place boats
 	public BattleboatsBoard(int row, int col) {
 		h = row;
 		w = col;
 		board = new int[h][w];
 		isVisited = new boolean[h][w];
+
+		// determine the number of boats
 		if (w == 3 || h == 3)
 			numBoats = 1;
 		else if ((w > 3 && w <= 5) || (h > 3 && h <= 5))
@@ -50,17 +70,21 @@ public class BattleboatsBoard {
 			numBoats = 4;
 		else if ((w > 9 && w <= 12) || (h > 9 && h <= 12))
 			numBoats = 6;
-		//System.out.println("numBoats: " + numBoats);
+
 		for (int i = 0; i < numBoats; i++)
 			placeBoat();	// set up the game by placing each boat
 	}
+
+	// place each boat
 	public boolean placeBoat() {
-		int[] tryBoard = new int[6];	// temporary location array, 3 pairs of coordinates
+		// temporary location array, 3 pairs of coordinates, row index first, column index second
+		int[] tryBoard = new int[6];
 		boatIndex++;	// increment by one when new boat added
 		int attempts = 0;	// make sure not falling into infinite loop
-		boolean success = false;	// break the loop early
+		// flag of sucessful or not so that we can break the loop early and get next boat placement tryial
+		boolean success = false;
 		boolean isVertical = (Math.random() < 0.5);	// vertical or horizontal
-		//System.out.println("isVertical = " + isVertical);
+
 		while (!success && attempts++ < 100) {
 			int r = (int)Math.floor(Math.random() * h);	// random row index generated
 			int c = (int)Math.floor(Math.random() * w);	// random column index generated
@@ -73,6 +97,7 @@ public class BattleboatsBoard {
 				if (r >= h || c >= w) {	//bottom fail or right boundary fail
 					success = false;
 				} else if (board[r][c] == 0) {	//unused cell
+					// bookkeep the temporary index
 					tryBoard[iTemp] = r;
 					tryBoard[iTemp+1] = c;
 					if(isVertical)
@@ -89,23 +114,24 @@ public class BattleboatsBoard {
 			// 100 attempts failed, which should not happen
 			System.out.println("Failed to placeBoat, attempts: " + attempts);
 		}
-		// copy the successful coordinates to the board
+		// copy the successful coordinates to the board and use boatIndex to mark that boat
 		for (int i = 0; i < tryBoard.length; i += 2) {
 			int row = tryBoard[i];
 			int col = tryBoard[i+1];
-			board[row][col] = boatIndex;
-			//System.out.println("(" + row + ", " + col + ")");
+			board[row][col] = boatIndex;	// use boatIndex to mark that boat
 		}
 		return success;
 	}
+
+	// get the user input, check it and print the board 
 	public void play() {
 		int turn = 0;
 		String result = "";
 		int r = 0, c = 0;
-		boolean isDebug = false;	// debug mode flag
+		
 		boolean isRecon = false;	// recon flag
 		Scanner sc = new Scanner(System.in);
-		System.out.print("debug mode?(true/false):");
+		System.out.print("debug mode?(true/false):");	// type "true" if in debug mode
 		if (sc.hasNext()) {
 			isDebug = sc.nextBoolean();
 		}
@@ -145,12 +171,12 @@ public class BattleboatsBoard {
 			String cmd = "";
 			sc = new Scanner(System.in);
 			if (sc.hasNext()) {
-				cmd = sc.nextLine(); 
+				cmd = sc.nextLine();	// parse the command "attack" or "recon"
 			}
-			//System.out.println(cmd);
+			// attack operation or recon operation
 			if (cmd.equals("attack")) {
 				if (r < 0 || r >= h || c < 0 || c >= w) {
-					// shoot out of bounds
+					// shoot out of bounds, penalty
 					turn++;
 					result = "Penalty, the user’s next turn will be skipped.";
 				} else {
@@ -161,10 +187,11 @@ public class BattleboatsBoard {
 						} else {
 							result = "hit";
 						}
-						board[r][c] *= -1;
+						board[r][c] *= -1;	// mark negative number after hit
 						numCannonShots++;
 					} else if (isVisited[r][c]) {
-						// duplicated shot
+						// If the user has already attacked that location
+						// duplicated shot, penalty
 						turn++;
 						result = "Penalty, the user’s next turn will be skipped.";
 					} else {
@@ -172,7 +199,7 @@ public class BattleboatsBoard {
 					}
 					isVisited[r][c] = true;
 				}
-			} else {
+			} else if (cmd.equals("attack")){
 				isRecon = true;
 				turn += 4;
 				result = "Penalty, the user’s next 4 turns will be skipped.";
@@ -180,9 +207,15 @@ public class BattleboatsBoard {
 			System.out.println(result);
 		}
 		partialDisplay();
+		if (isDebug) {
+			System.out.println();
+			System.out.println("DEBUG");
+			display();
+		}
 		System.out.println("The total number of turns is " + turn);
 		System.out.println("The total number of cannon shots is " + numCannonShots);
 	}
+
 	// check if the hit is the last hit
 	public boolean checkSunk(int target) {
 		int counter = 0;

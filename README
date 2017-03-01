@@ -1,0 +1,79 @@
+sample testing:
+
+> javac BattleboatsBoard.java
+> java BattleboatsBoard 5 4
+
+debug mode?(true/false):true
+
+Turn 1
+X	X	X	X	
+X	X	X	X	
+X	X	X	X	
+X	X	X	X	
+X	X	X	X	
+
+DEBUG
+0(I)	0(I)	0(I)	0(I)	
+2(I)	0(I)	0(I)	0(I)	
+2(I)	1(I)	0(I)	0(I)	
+2(I)	1(I)	0(I)	0(I)	
+0(I)	1(I)	0(I)	0(I)	
+
+// In debug mode, we can see that 'I' stands for unvisited grid, which is invisible by user.
+
+Please enter a row number: > 1
+Please enter a column number: > 0
+attack or recon?(attack/recon) > attack
+
+hit
+Turn 2
+X	X	X	X	
+2	X	X	X	
+X	X	X	X	
+X	X	X	X	
+X	X	X	X	
+
+DEBUG
+0(I)	0(I)	0(I)	0(I)	
+-2		0(I)	0(I)	0(I)	
+2(I)	1(I)	0(I)	0(I)	
+2(I)	1(I)	0(I)	0(I)	
+0(I)	1(I)	0(I)	0(I)	
+
+// In debug mode, we can see that negative value means that the grid composed of the    //boat has been hit.
+
+Please enter a row number: > 1
+Please enter a column number: > 1
+attack or recon?(attack/recon) > recon
+
+Penalty, the user’s next 4 turns will be skipped.
+Turn 7
+RECON
+(0, 0) = -1	// the grid has been hit
+(0, 1) = 0	// the grid has no boat
+(0, 2) = 0
+(1, 0) = 1	// has boat 1
+(1, 1) = 2	// has boat 2
+(1, 2) = 2	// has boat 2
+(2, 0) = 1	// has boat 1
+(2, 1) = 0
+(2, 2) = 0
+1	X	X	X	
+X	X	X	X	
+X	X	X	X	
+X	X	X	X	
+X	X	X	X	
+
+DEBUG
+0(I)	0(I)	0(I)	0(I)	
+-2 		0(I)	0(I)	0(I)	
+-2 		-1 		0(I)	0(I)	
+-2 		-1 		0(I)	0(I)	
+0(I)	-1 		0(I)	0(I)
+
+//	...
+
+//	After we hit all boats, it will print all info
+The total number of turns is 12
+The total number of cannon shots is 6
+
