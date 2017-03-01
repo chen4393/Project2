@@ -1,3 +1,6 @@
+/* Implemented by Chaoran Chen	chen4393
+*/
+
 import java.util.Scanner;
 
 public class BattleboatsBoard {
