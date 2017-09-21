@@ -1,4 +1,7 @@
-/* Implemented by Chaoran Chen	chen4393
+/* 
+I choose this code snippet because it is a simple but self-contained demo showing my interest in Java programming 
+and this is a battle boats game which can be transplated into android, iOS and web platforms.
+Implemented by Chaoran Chen	chen4393
 */
 
 import java.util.Scanner;
